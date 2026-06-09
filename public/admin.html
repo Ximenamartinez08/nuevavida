@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin – NuevaVida</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --blue:#2C4A7C;--blue-light:#4A72B0;--blue-pale:#EBF0F8;
+  --red:#C4622D;--red-dark:#9E4A1F;
+  --gold:#C8862A;--gold-light:#DFA040;
+  --cream:#FBF8F3;--warm:#F0E9DE;--text:#2B2018;--muted:#7A6B5A;
+  --white:#fff;--shadow:rgba(44,74,124,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);}
+
+/* LOGIN */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#EBF0F8,#FBF8F3);}
+.login-box{background:var(--white);border-radius:20px;padding:40px 36px;max-width:380px;width:90%;box-shadow:0 8px 40px var(--shadow);text-align:center;}
+.login-box h1{font-family:'Playfair Display',serif;color:var(--blue);font-size:26px;margin-bottom:6px;}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:24px;}
+.login-box input{width:100%;padding:12px 16px;border:2px solid var(--warm);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;transition:border .2s;}
+.login-box input:focus{border-color:var(--blue-light);}
+.login-error{color:var(--red);font-size:13px;margin-top:8px;}
+
+/* BOTONES */
+.btn{background:var(--blue);color:#fff;padding:11px 24px;border:none;border-radius:10px;font-weight:600;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;}
+.btn:hover{background:var(--blue-light);transform:translateY(-1px);}
+.btn-red{background:var(--red);}
+.btn-red:hover{background:var(--red-dark);}
+.btn-gold{background:var(--gold);}
+.btn-gold:hover{background:var(--gold-light);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-ghost{background:transparent;border:1.5px solid var(--blue);color:var(--blue);}
+.btn-ghost:hover{background:var(--blue-pale);}
+
+/* DASHBOARD */
+#dashboard{display:none;}
+.topbar{background:var(--white);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--red);box-shadow:0 2px 10px var(--shadow);position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:'Playfair Display',serif;color:var(--blue);font-size:20px;}
+.topbar-logo span{color:var(--red);}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+.topbar-right small{color:var(--muted);font-size:12px;}
+
+.main{padding:24px;max-width:1200px;margin:0 auto;}
+
+/* TABS */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;background:var(--white);padding:8px;border-radius:14px;box-shadow:0 2px 8px var(--shadow);}
+.tab{padding:8px 18px;border-radius:8px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s;}
+.tab.active{background:var(--blue);color:#fff;}
+.tab:hover:not(.active){background:var(--blue-pale);color:var(--blue);}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--white);border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 10px var(--shadow);border-top:4px solid var(--blue);}
+.stat-card .num{font-size:34px;font-weight:700;color:var(--blue);}
+.stat-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;}
+.stat-card.red{border-color:var(--red);}.stat-card.red .num{color:var(--red);}
+.stat-card.gold{border-color:var(--gold);}.stat-card.gold .num{color:var(--gold);}
+
+/* TABLA */
+.table-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 2px 10px var(--shadow);}
+table{width:100%;border-collapse:collapse;background:var(--white);}
+th{background:var(--blue);color:#fff;padding:11px 14px;text-align:left;font-size:12px;font-weight:600;}
+th:first-child{border-radius:14px 0 0 0;}th:last-child{border-radius:0 14px 0 0;}
+td{padding:10px 14px;border-bottom:1px solid var(--warm);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}tr:hover td{background:#fdf8f3;}
+
+/* FILTROS */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.toolbar input,.toolbar select{padding:8px 12px;border:1.5px solid var(--warm);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--blue-light);}
+
+/* CHART */
+.chart-wrap{background:var(--white);border-radius:14px;padding:20px;box-shadow:0 2px 10px var(--shadow);margin-bottom:24px;}
+.chart-wrap canvas{max-height:240px;}
+
+/* SECCIÓN */
+.section{display:none;}.section.active{display:block;}
+.section-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--blue);margin-bottom:14px;}
+
+/* LOADER */
+.loader{text-align:center;padding:30px;color:var(--blue);}
+.empty{text-align:center;color:var(--muted);padding:24px;font-size:13px;}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+.badge-blue{background:var(--blue-pale);color:var(--blue);}
+.badge-red{background:#fce8de;color:var(--red);}
+.badge-gold{background:#fdf3e0;color:var(--gold);}
+
+@media(max-width:600px){.stats-grid{grid-template-columns:1fr 1fr;}.main{padding:14px;}.topbar-logo{font-size:16px;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h1>🌱 Nueva<span style="color:var(--red)">Vida</span></h1>
+    <p>Panel de Administración</p>
+    <input type="text" id="loginUser" placeholder="Usuario" value="admin"
+           onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+    <input type="password" id="loginPass" placeholder="Contraseña"
+           onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn" style="width:100%;margin-top:4px;" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">🌱 Nueva<span>Vida</span> <small style="font-family:'DM Sans';font-size:13px;color:var(--muted);font-weight:400;">Admin</small></div>
+    <div class="topbar-right">
+      <small id="adminLabel"></small>
+      <button class="btn btn-gold btn-sm" onclick="exportarActual()">⬇ CSV</button>
+      <button class="btn btn-sm" style="background:#ccc;color:#333;" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('resumen')">📊 Resumen</button>
+      <button class="tab" onclick="setTab('usuarios')">👥 Usuarios</button>
+      <button class="tab" onclick="setTab('postulaciones')">📋 Postulaciones</button>
+      <button class="tab" onclick="setTab('voluntarios')">🤝 Voluntarios</button>
+      <button class="tab" onclick="setTab('orientacion')">💬 Orientación</button>
+      <button class="tab" onclick="setTab('contacto')">✉️ Contacto</button>
+      <button class="tab" onclick="setTab('vacantes')">💼 Vacantes</button>
+    </div>
+
+    <!-- RESUMEN -->
+    <div id="sec-resumen" class="section active">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="num" id="st-usuarios">–</div><div class="lbl">Usuarios</div></div>
+        <div class="stat-card red"><div class="num" id="st-postulaciones">–</div><div class="lbl">Postulaciones</div></div>
+        <div class="stat-card gold"><div class="num" id="st-voluntarios">–</div><div class="lbl">Voluntarios</div></div>
+        <div class="stat-card" style="border-color:#27ae60;"><div class="num" id="st-orientacion" style="color:#27ae60;">–</div><div class="lbl">Orientación</div></div>
+        <div class="stat-card" style="border-color:#8e44ad;"><div class="num" id="st-contacto" style="color:#8e44ad;">–</div><div class="lbl">Mensajes</div></div>
+        <div class="stat-card" style="border-color:#2980b9;"><div class="num" id="st-vacantes" style="color:#2980b9;">–</div><div class="lbl">Vacantes</div></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartResumen"></canvas>
+      </div>
+      <div class="section-title">Postulaciones recientes</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Nombre</th><th>Vacante</th><th>Correo</th><th>Fecha</th></tr></thead>
+        <tbody id="tbRecientes"></tbody></table>
+      </div>
+    </div>
+
+    <!-- SECCIONES DE TABLA -->
+    <div id="sec-usuarios" class="section">
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar..." oninput="filtrarTabla('usuarios',this.value)">
+        <button class="btn btn-sm btn-ghost" onclick="exportarActual()">⬇ Exportar CSV</button>
+      </div>
+      <div class="table-wrap" id="tbl-usuarios"><div class="loader">Cargando...</div></div>
+    </div>
+
+    <div id="sec-postulaciones" class="section">
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar..." oninput="filtrarTabla('postulaciones',this.value)">
+        <button class="btn btn-sm btn-ghost" onclick="exportarActual()">⬇ Exportar CSV</button>
+      </div>
+      <div class="table-wrap" id="tbl-postulaciones"><div class="loader">Cargando...</div></div>
+    </div>
+
+    <div id="sec-voluntarios" class="section">
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar..." oninput="filtrarTabla('voluntarios',this.value)">
+        <button class="btn btn-sm btn-ghost" onclick="exportarActual()">⬇ Exportar CSV</button>
+      </div>
+      <div class="table-wrap" id="tbl-voluntarios"><div class="loader">Cargando...</div></div>
+    </div>
+
+    <div id="sec-orientacion" class="section">
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar..." oninput="filtrarTabla('orientacion',this.value)">
+        <button class="btn btn-sm btn-ghost" onclick="exportarActual()">⬇ Exportar CSV</button>
+      </div>
+      <div class="table-wrap" id="tbl-orientacion"><div class="loader">Cargando...</div></div>
+    </div>
+
+    <div id="sec-contacto" class="section">
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar..." oninput="filtrarTabla('contacto',this.value)">
+        <button class="btn btn-sm btn-ghost" onclick="exportarActual()">⬇ Exportar CSV</button>
+      </div>
+      <div class="table-wrap" id="tbl-contacto"><div class="loader">Cargando...</div></div>
+    </div>
+
+    <div id="sec-vacantes" class="section">
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar..." oninput="filtrarTabla('vacantes',this.value)">
+        <button class="btn btn-sm btn-ghost" onclick="exportarActual()">⬇ Exportar CSV</button>
+      </div>
+      <div class="table-wrap" id="tbl-vacantes"><div class="loader">Cargando...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = '';
+let TOKEN = '';
+let tabActual = 'resumen';
+let _datos = {};
+let _chart = null;
+
+// ── LOGIN ──
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  try {
+    const res  = await fetch(API + '/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ usuario: u, password: p })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    TOKEN = data.token;
+    document.getElementById('adminLabel').textContent = '👤 ' + u;
+    document.getElementById('loginPage').style.display  = 'none';
+    document.getElementById('dashboard').style.display  = 'block';
+    cargarResumen();
+  } catch(err) { errEl.textContent = err.message; }
+}
+
+function logout() {
+  TOKEN = '';
+  document.getElementById('loginPage').style.display  = 'flex';
+  document.getElementById('dashboard').style.display  = 'none';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── TABS ──
+function setTab(name) {
+  tabActual = name;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  const tabs = ['resumen','usuarios','postulaciones','voluntarios','orientacion','contacto','vacantes'];
+  document.querySelectorAll('.tab')[tabs.indexOf(name)].classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  if (name !== 'resumen') cargarTabla(name);
+}
+
+// ── RESUMEN ──
+async function cargarResumen() {
+  try {
+    const res  = await fetch(API + '/api/admin/resumen', { headers: { Authorization: 'Bearer ' + TOKEN } });
+    const data = await res.json();
+    const t = data.totales;
+    document.getElementById('st-usuarios').textContent      = t.usuarios;
+    document.getElementById('st-postulaciones').textContent = t.postulaciones;
+    document.getElementById('st-voluntarios').textContent   = t.voluntarios;
+    document.getElementById('st-orientacion').textContent   = t.orientacion;
+    document.getElementById('st-contacto').textContent      = t.contacto;
+    document.getElementById('st-vacantes').textContent      = t.vacantes;
+
+    // Gráfica
+    const ctx = document.getElementById('chartResumen').getContext('2d');
+    if (_chart) _chart.destroy();
+    _chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Usuarios','Postulaciones','Voluntarios','Orientación','Mensajes','Vacantes'],
+        datasets:[{ label:'Total registros',
+          data:[t.usuarios,t.postulaciones,t.voluntarios,t.orientacion,t.contacto,t.vacantes],
+          backgroundColor:['rgba(44,74,124,.7)','rgba(196,98,45,.7)','rgba(200,134,42,.7)','rgba(39,174,96,.7)','rgba(142,68,173,.7)','rgba(41,128,185,.7)'],
+          borderRadius:8, borderWidth:0
+        }]
+      },
+      options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}}, responsive:true, maintainAspectRatio:false }
+    });
+
+    // Tabla recientes
+    const tbody = document.getElementById('tbRecientes');
+    tbody.innerHTML = data.recPostulaciones.map(r => `
+      <tr>
+        <td><strong>${esc(r.nombre)}</strong></td>
+        <td>${esc(r.vacante)}</td>
+        <td>${esc(r.correo||'–')}</td>
+        <td>${fmt(r.creado_en)}</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="empty">Sin postulaciones aún.</td></tr>';
+  } catch(err) { console.error(err); }
+}
+
+// ── TABLA DINÁMICA ──
+async function cargarTabla(tabla) {
+  const cont = document.getElementById('tbl-' + tabla);
+  cont.innerHTML = '<div class="loader">Cargando...</div>';
+  try {
+    const res  = await fetch(API + '/api/admin/' + tabla, { headers: { Authorization: 'Bearer ' + TOKEN } });
+    const data = await res.json();
+    _datos[tabla] = data.datos;
+    renderTabla(tabla, data.datos);
+  } catch(err) { cont.innerHTML = '<div class="empty">Error al cargar.</div>'; }
+}
+
+function renderTabla(tabla, filas) {
+  const cont = document.getElementById('tbl-' + tabla);
+  if (!filas || !filas.length) { cont.innerHTML = '<div class="empty">Sin registros.</div>'; return; }
+  const cols = Object.keys(filas[0]).filter(c => c !== 'password');
+  const header = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  const body   = filas.map(f =>
+    '<tr>' + cols.map(c => `<td>${esc(String(f[c] ?? '–'))}</td>`).join('') + '</tr>'
+  ).join('');
+  cont.innerHTML = `<table><thead>${header}</thead><tbody>${body}</tbody></table>`;
+}
+
+function filtrarTabla(tabla, q) {
+  if (!_datos[tabla]) return;
+  const ql = q.toLowerCase();
+  const filtrado = _datos[tabla].filter(f =>
+    Object.values(f).some(v => String(v).toLowerCase().includes(ql))
+  );
+  renderTabla(tabla, filtrado);
+}
+
+// ── EXPORTAR CSV ──
+async function exportarActual() {
+  const t = tabActual === 'resumen' ? 'postulaciones' : tabActual;
+  try {
+    const res = await fetch(API + '/api/admin/exportar/' + t, { headers: { Authorization: 'Bearer ' + TOKEN } });
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'nuevavida_' + t + '.csv'; a.click();
+    URL.revokeObjectURL(url);
+  } catch(err) { alert('Error al exportar.'); }
+}
+
+// ── HELPERS ──
+function fmt(str) {
+  if (!str) return '–';
+  const d = new Date(str);
+  return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
+       + ' ' + d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
