@@ -100,8 +100,8 @@ async function initDB() {
       console.log('👤 Admin creado  →  usuario: admin  |  password: admin123');
     }
 
-  } catch (err) {
-    console.error('❌ Error MySQL:', err.message);
+} catch (err) {
+    console.error('❌ Error MySQL:', err.message, err.code, err.sqlMessage);
     process.exit(1);
   }
 }
